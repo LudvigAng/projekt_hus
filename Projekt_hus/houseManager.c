@@ -1,7 +1,7 @@
 /*
 * File: houseManager.c
-* Version: 1.0
-* Last modified on Tue Nov 16 2018 by CaAn
+* Version: 1.1
+* Last modified on Tue Nov 28 2018 by CaAn
 * -----------------------------------------------------
 * This interface provides the basic functions for the house game
 * These functions must not be changed by the student.
@@ -11,10 +11,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-
-#define HIGHOFFSET 10
-#define LOWOFFSET 5
-#define MAXWALLSEPARATION 3
 
 MapT createMap(int width, int heigth, int noOfWalls)
 {
@@ -32,20 +28,20 @@ MapT createMap(int width, int heigth, int noOfWalls)
 	for (int r = 0; r < heigth; r++)
 		tMap.vArr[r] = (int*)malloc(width * sizeof(int));
 
-	//Fill the array's with initial values, 'e' for edge and space for the inner space and 1 for visible and 0 for not visible
+	//Fill the array's with initial values, OUTERWALL for edge and space for the inner space and 1 for visible and 0 for not visible
 	for (int r = 0; r < heigth; r++)
 		for (int k = 0; k < width; k++) {
 			if (r == 0 || r == (heigth - 1) || k == 0 || k == (width - 1)) {
-				tMap.mArr[r][k] = 'e';
+				tMap.mArr[r][k] = OUTERWALL;
 				tMap.vArr[r][k] = 1;
 			}
 			else {
-				tMap.mArr[r][k] = ' ';
+				tMap.mArr[r][k] = EMPTYSPACE;
 				tMap.vArr[r][k] = 0;
 			}
 		}
 
-	//Place walls 'w' marks a wall. An inner wall is always placed stretching from one of the edges 
+	//Place walls INNERWALL marks a wall. An inner wall is always placed stretching from one of the edges 
 	int r, k, rMax, rMin, kMax, kMin;
 	int *pkValues = (int *)malloc(noOfWalls * sizeof(int)); // Remember the column for each vertical wall
 	int *prValues = (int *)malloc(noOfWalls * sizeof(int)); // Remember the row for each horizontal wall
@@ -59,7 +55,7 @@ MapT createMap(int width, int heigth, int noOfWalls)
 			rMax = (w % 4 == 0) ? (rand() % (heigth - 2) + 1) : (heigth - 1);
 			rMin = (w % 4 == 0) ? 1 : (rand() % (heigth - 2) + 1);
 			for(r = rMin; r < rMax; r++)
-				tMap.mArr[r][k] = 'w';
+				tMap.mArr[r][k] = INNERWALL;
 		}
 		else  { 
 			r = rand() % (heigth - HIGHOFFSET) + LOWOFFSET;
@@ -67,7 +63,7 @@ MapT createMap(int width, int heigth, int noOfWalls)
 			kMax = (w % 4 == 1) ? (rand() % (width - 2) + 1) : (width - 1);
 			kMin = (w % 4 == 1) ? 1 : (rand() % (width - 2) + 1);
 			for (k = kMin; k < kMax; k++)
-				tMap.mArr[r][k] = 'w';
+				tMap.mArr[r][k] = INNERWALL;
 		}
 	}
 	//Release memory allocated on the heap that is only used locally when the function is run
@@ -81,8 +77,8 @@ MapT createMap(int width, int heigth, int noOfWalls)
 		side = rand() % 4 + 1;
 		r = (side == 1 ? 0 : (side == 3 ? (heigth - 1) : rand() % (heigth - HIGHOFFSET) + LOWOFFSET));
 		k = (side == 2 ? 0 : (side == 4 ? (width - 1) : rand() % (width - HIGHOFFSET) + LOWOFFSET));
-	} while (!((side == 1 && tMap.mArr[r + 1][k] != 'w') || (side == 3 && tMap.mArr[r - 1][k] != 'w') || (side == 2 && tMap.mArr[r][k + 1] != 'w') || (side == 4 && tMap.mArr[r][k - 1] != 'w')));
-	tMap.mArr[r][k] = 'M';
+	} while (!((side == 1 && tMap.mArr[r + 1][k] != INNERWALL) || (side == 3 && tMap.mArr[r - 1][k] != INNERWALL) || (side == 2 && tMap.mArr[r][k + 1] != INNERWALL) || (side == 4 && tMap.mArr[r][k - 1] != INNERWALL)));
+	tMap.mArr[r][k] = MAINENTRANCE;
 
 	//Place doors on the inner walls
 	placeDoors(tMap);
@@ -108,11 +104,11 @@ static void placeDoors(MapT tMap)
 				k0 = ti(m - 1, tMap.width, side);
 				k1 = ti(m, tMap.width, side);
 				k2 = ti(m + 1, tMap.width, side);
-				if (tMap.mArr[r1][k1] == 'w') { //Check if we encounter a vertical inner wall
+				if (tMap.mArr[r1][k1] == INNERWALL) { //Check if we encounter a vertical inner wall
 					int nPrev = n; //Collect the positon of a crossing wall and remember the previous position
-					while (tMap.mArr[r1][k1] == 'w') { //Move along the wall
-						if ((tMap.mArr[r1][k2] == 'w') || (tMap.mArr[r1][k0] == 'w') || (tMap.mArr[r2][k1] == 'e')) {
-							tMap.mArr[ti(nPrev + (rand() % (abs(nPrev - n) - 1)), tMap.heigth, side)][k1] = 'D'; //Places the door in a random position on the wall
+					while (tMap.mArr[r1][k1] == INNERWALL) { //Move along the wall
+						if ((tMap.mArr[r1][k2] == INNERWALL) || (tMap.mArr[r1][k0] == INNERWALL) || (tMap.mArr[r2][k1] == OUTERWALL)) {
+							tMap.mArr[ti(nPrev + (rand() % (abs(nPrev - n) - 1)), tMap.heigth, side)][k1] = DOOR; //Places the door in a random position on the wall
 							placeKey(tMap, ti(mPrev, tMap.width, side), k1, ti(nPrev, tMap.heigth, side), r1, side);
 							nPrev = n + 1;
 						}
@@ -133,11 +129,11 @@ static void placeDoors(MapT tMap)
 				r2 = ti(n + 1, tMap.heigth, side);
 				k1 = ti(m, tMap.width, side);
 				k2 = ti(m + 1, tMap.width, side);
-				if (tMap.mArr[r1][k1] == 'w') { //Check if we encounter a horizontal inner wall
+				if (tMap.mArr[r1][k1] == INNERWALL) { //Check if we encounter a horizontal inner wall
 					int mPrev = m;
-					while (tMap.mArr[r1][k1] == 'w') { //Move along the wall
-						if ((tMap.mArr[r2][k1] == 'w') || (tMap.mArr[r0][k1] == 'w') || (tMap.mArr[r1][k2] == 'e')) {
-							tMap.mArr[r1][ti(mPrev + (rand() % (abs(mPrev - m) - 1)), tMap.width, side)] = 'D'; //Places the door in a random position on th wall
+					while (tMap.mArr[r1][k1] == INNERWALL) { //Move along the wall
+						if ((tMap.mArr[r2][k1] == INNERWALL) || (tMap.mArr[r0][k1] == INNERWALL) || (tMap.mArr[r1][k2] == OUTERWALL)) {
+							tMap.mArr[r1][ti(mPrev + (rand() % (abs(mPrev - m) - 1)), tMap.width, side)] = DOOR; //Places the door in a random position on th wall
 							placeKey(tMap, ti(mPrev, tMap.width, side), k1, ti(nPrev, tMap.heigth, side), r1, side);
 							mPrev = m + 1;
 						}
@@ -162,7 +158,7 @@ void drawMap(MapT theMap)
 	printf("\n");
 	for (int r = 0; r < theMap.heigth; r++) {
 		for (int k = 0; k < theMap.width; k++)
-			printf(" %c", (theMap.vArr[r][k] ? theMap.mArr[r][k] : ' '));
+			printf(" %c", (theMap.vArr[r][k] ? theMap.mArr[r][k] : EMPTYSPACE));
 		printf("\n");
 	}
 }
@@ -200,7 +196,7 @@ static void placeKey(MapT tMap, int colPrev, int col, int rowPrev, int row, int 
 	do {
 		r = (side % 2 == 1) ? rowPrev + (2 - side)*(rand() % (abs(rowPrev - row) - 1)) : rowPrev + (3 - side)*(rand() % (abs(rowPrev - row) - 1));
 		k = (side % 2 == 1) ? colPrev + (2 - side)*(rand() % (abs(colPrev - col) - 1)) : colPrev + (3 - side)*(rand() % (abs(colPrev - col) - 1));
-	} while (tMap.mArr[r][k] != ' ');
+	} while (tMap.mArr[r][k] != EMPTYSPACE);
 	tMap.mArr[r][k] = 'K';
 }
 

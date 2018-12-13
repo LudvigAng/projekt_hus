@@ -1,7 +1,7 @@
 /*
 * File: houseManager.h
-* Version: 1.0
-* Last modified on Tue Nov 5 2018 by CaAn
+* Version: 1.1
+* Last modified on Tue Nov 28 2018 by CaAn
 * -----------------------------------------------------
 * This interface provides the basic functions for the house game
 * These functions must not be changed by the student.
@@ -22,6 +22,14 @@ struct houseMap {
 
 typedef struct houseMap MapT;
 
+#define HIGHOFFSET 10
+#define LOWOFFSET 5
+#define MAXWALLSEPARATION 3
+#define OUTERWALL 'e'
+#define INNERWALL 'w'
+#define DOOR 'D'
+#define MAINENTRANCE 'M'
+#define EMPTYSPACE ' '
 
 /********************************************************************
 Function: CreateMap()
