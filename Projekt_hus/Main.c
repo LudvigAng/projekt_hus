@@ -7,10 +7,7 @@
 
 int main(void) {
 	system("chcp 1252");
-	const int width = 35;
-	const int height = 24;
-	const int noOfWalls = 25;
-	int playGame = 1;
+	int width = 35, height = 24, noOfWalls = 25, playGame = 1, mapstate = 1;
 	inputT playerChoice;
 	MapT houseMap;
 	playerValues kermit;
@@ -19,9 +16,8 @@ int main(void) {
 	kermit.dynamite = 0;
 
 	houseMap = createMap(width, height, noOfWalls);
-	placePoints(houseMap);
-	placeDynamite(houseMap);
-	createKermit(width, height, houseMap, &kermit);
+	placeObjectsOnMap(&houseMap, mapstate);
+	createKermit(width, height, &houseMap, &kermit);
 	displayMap(houseMap);
 
 	do {
@@ -30,21 +26,19 @@ int main(void) {
 		drawMap(houseMap);
 		displayMap(houseMap);
 		//drawMapVisibility(houseMap);
+		printInventory(&kermit);
 
 		playerChoice = getUserInput();
 		removeKermitVisibility(houseMap, &kermit);
 		kermitAction(playerChoice, &kermit, houseMap);
-
-		updateKermitPosition(houseMap, &kermit);
-
+		
+		updateKermitValues(houseMap, &kermit);
+		checkIfTransformMap(playerChoice, &houseMap, &kermit);
 		playGame = winGame(height, width, houseMap, &kermit);
 
 		//fixa så snyggare sätta kermit-värden till 0? (keys, dynamite, points)
-		//fixa så dynamit fungerar längst upp pch längst ned
-		//fixa så problem med dynamit fixas. Om dynamit plockas upp efter man använt en dynamit blir antalet dynamit man innehar konstigt (-23)
+		//fixa så dynamit fungerar längst upp pch längst ned (fel på x?)
 
-		//lägga in <help> för att användaren ska få veta vad man kan skriva?
-		//lägga in <stat> för att användaren ska få veta statistik om spelandet
-		//lägga in alternativ-map. T.ex. om man hittar en spak eller ngt. I nya kartan är det helt annorlunda, surrealistiskt. Ska kunna ta sig tillbaka till vanliga om man vill.
+		//lägga in <help> för att användaren ska få veta vad man kan skriva och göra
 	} while (playGame);
 }

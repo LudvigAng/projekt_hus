@@ -82,12 +82,12 @@ inputT getUserInput(void)
 }
 
 
-void createKermit(int width, int height, MapT houseMap, playerValues *kermit) {
+void createKermit(int width, int height, MapT *houseMap, playerValues *kermit) {
 	kermit->x = height / 2;
 	kermit->y = width / 2;
 
-	houseMap.mArr[kermit->x][kermit->y] = '@';
-	houseMap.vArr[kermit->x][kermit->y] = 1;
+	houseMap->mArr[kermit->x][kermit->y] = '@';
+	houseMap->vArr[kermit->x][kermit->y] = 1;
 }
 
 
@@ -112,11 +112,57 @@ void kermitAction(inputT playerChoice, playerValues *kermit, MapT houseMap) {
 	if (playerChoice.op == 6 && playerChoice.mObj == 8) useDynamite(houseMap, kermit);
 }
 
+void transformMap(MapT *houseMap, playerValues *kermit) {
+	srand((int)time(NULL));
+	int diff = 0;
+	diff = rand() % 2;
+
+	for (int i = -1; i < 2; i++) {
+		for (int j = -1; j < 2; j++) {
+			if (houseMap->mArr[kermit->x + i][kermit->y + j] == 'I') {
+				if (diff == 0) {
+					loadHardMap(houseMap, kermit);
+				}
+				if (diff == 1) {
+					loadEasyMap(houseMap, kermit);
+				}
+			}
+		}
+	}
+}
+
+void loadEasyMap(MapT *houseMap, playerValues *kermit) {
+	system("cls");
+	printf("Du har tur! Du hittar en enklare karta att ta dig igenom!");
+	getchar();
+	int width = 35, height = 24, noOfWalls = 12, mapstate = 2;
+	kermit->keys += 3;
+	kermit->dynamite += 1;
+
+	*houseMap = createMap(width, height, noOfWalls);
+	placeObjectsOnMap(houseMap, mapstate);
+	createKermit(width, height, houseMap, kermit);
+}
+
+void loadHardMap(MapT *houseMap, playerValues *kermit) {
+	system("cls");
+	printf("Du har otur! Du hittar en svårare karta att ta dig igenom!");
+	getchar();
+	int width = 35, height = 24, noOfWalls = 32, mapstate = 3;
+
+	*houseMap = createMap(width, height, noOfWalls);
+	placeObjectsOnMap(houseMap, mapstate);
+	createKermit(width, height, houseMap, kermit);
+}
+
+void checkIfTransformMap(inputT playerChoice, MapT *houseMap, playerValues *kermit) {
+	if (playerChoice.op == 6 && playerChoice.mObj == 9) transformMap(houseMap, kermit);
+}
+
+
 void checkIfPointPickup(MapT houseMap, playerValues *kermit) {
 	if (houseMap.mArr[kermit->x][kermit->y] == '*') {
 		kermit->points += 50;
-		printf("Du plockade upp en poäng!\nDina poäng: %d", kermit->points);
-		getchar();
 	}
 }
 
@@ -127,8 +173,6 @@ int grabItem(inputT playerChoice, MapT houseMap, playerValues *kermit) {
 				if (houseMap.mArr[kermit->x + i][kermit->y + j] == 'K') {
 					houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
 					kermit->keys++;
-					printf("Du plockade upp en nyckel!\nDina nycklar: %d", kermit->keys);
-					getchar();
 					return 1;
 				}
 			}
@@ -140,8 +184,6 @@ int grabItem(inputT playerChoice, MapT houseMap, playerValues *kermit) {
 				if (houseMap.mArr[kermit->x + i][kermit->y + j] == 'X') {
 					houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
 					kermit->dynamite++;
-					printf("Du plockade upp en dynamit!\nDina dynamiter: %d", kermit->dynamite);
-					getchar();
 					return 1;
 				}
 			}
@@ -158,10 +200,10 @@ void useDynamite(MapT houseMap, playerValues *kermit) {
 			for (int j = -2; j < 3; j++) {
 				if (houseMap.mArr[kermit->x + i][kermit->y + j] != 'e' && houseMap.mArr[kermit->x + i][kermit->y + j] != 'M') {
 					houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
-					kermit->dynamite--;
 				}
 			}
 		}
+		kermit->dynamite--;
 	}
 	else {
 		printf("Du har ingen dynamit att använda!");
@@ -169,13 +211,15 @@ void useDynamite(MapT houseMap, playerValues *kermit) {
 	}
 }
 
-
-void updateKermitPosition(MapT houseMap, playerValues *kermit) {
+void updateKermitValues(MapT houseMap, playerValues *kermit) {
 	houseMap.mArr[kermit->last_x][kermit->last_y] = ' ';
 	houseMap.mArr[kermit->x][kermit->y] = '@';
 	houseMap.vArr[kermit->x][kermit->y] = 1;
 }
 
+void printInventory(playerValues *kermit) {
+	printf("\t\t\t\t\t\t\t\tNycklar: %d\n\t\t\t\t\t\t\t\tDynamiter: %d\n\t\t\t\t\t\t\t\tPoäng: %d", kermit->keys, kermit->dynamite, kermit->points);
+}
 
 void kermitVisibility(MapT houseMap, playerValues *kermit) {
 	for (int row = -1; row < 2; row++) {
@@ -244,8 +288,6 @@ int openDoor(MapT houseMap, playerValues *kermit) {
 				if (kermit->keys > 0) {
 					houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
 					kermit->keys--;
-					printf("Dörr öppnad\nDina nycklar: %d", kermit->keys);
-					getchar();
 					return 1;
 				}
 				else {
@@ -268,7 +310,7 @@ int openExitDoor(MapT houseMap, playerValues *kermit) {
 					houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
 					//houseMap.vArr[kermit->x + i][kermit->y + j] = 0;
 					kermit->keys--;
-					printf("Ytterdörren öppnad! Gå ut för att vinna spelet...\nDina nycklar: %d", kermit->keys);
+					printf("Ytterdörren öppnad! Gå ut för att vinna spelet...");
 					getchar();
 					return 1;
 				}
@@ -286,6 +328,7 @@ int openExitDoor(MapT houseMap, playerValues *kermit) {
 int winGame(int height, int width, MapT houseMap, playerValues *kermit) {
 	if (kermit->x == 0 || kermit->x == height - 1 || kermit->y == 0 || kermit->y == width - 1) {
 		system("cls");
+		kermit->points += 200;
 		printf("Du har tagit dig ur huset och vunnit!\nDina poäng: %d", kermit->points);
 		getchar();
 		return 0;
@@ -295,30 +338,71 @@ int winGame(int height, int width, MapT houseMap, playerValues *kermit) {
 	}
 }
 
-void placePoints(MapT houseMap) {
-	int xPos = 0;
-	int yPos = 0;
+void placePoints(MapT *houseMap, int mapstate) {
+	int xPos = 0, yPos = 0, visibility = 0, i = 0;
 	char pointChr = '*';
-	int visibility = 0;
 	positionT pos;
 
-	for (int i = 0; i <= 18; i++)
-	placeObject(houseMap, xPos, yPos, pointChr, &pos, visibility);
-}
+	if (mapstate == 1) {
+		i = 0;
+	}
+	else if (mapstate == 2) {
+		i = -8;
+	}
+	else if (mapstate == 3) {
+		i = 8;
+	}
 
-void placeDynamite(MapT houseMap) {
-	char pointChr = 'X';
-	int visibility = 1;
-	positionT pos;
-	int xPos = 0;
-	int yPos = 0;
-
-	for (int i = 0; i <= 30; i++) {
-		placeObject(houseMap, xPos, yPos, pointChr, &pos, visibility);
+	for (; i <= 18; i++) {
+		placeObject(*houseMap, xPos, yPos, pointChr, &pos, visibility);
 	}
 }
 
+void placeLevers(MapT *houseMap, int mapstate) {
+	char pointChr = 'I';
+	int visibility = 0, xPos = 0, yPos = 0, i = 0;
+	positionT pos;
 
+	if (mapstate == 1) {
+		i = 0;
+	}
+	else if (mapstate == 2) {
+		i = 3;
+	}
+	else if (mapstate == 3) {
+		i = 3;
+	}
+
+	for (; i <= 2; i++) {
+		placeObject(*houseMap, xPos, yPos, pointChr, &pos, visibility);
+	}
+}
+
+void placeDynamite(MapT *houseMap, int mapstate) {
+	char pointChr = 'X';
+	int visibility = 0, xPos = 0, yPos = 0, i = 0;
+	positionT pos;
+
+	if (mapstate == 1) {
+		i = 0;
+	}
+	else if (mapstate == 2) {
+		i = -6;
+	}
+	else if (mapstate == 3) {
+		i = 14;
+	}
+
+	for (; i <= 20; i++) {
+		placeObject(*houseMap, xPos, yPos, pointChr, &pos, visibility);
+	}
+}
+
+void placeObjectsOnMap(MapT *houseMap, int mapstate) {
+	placePoints(houseMap, mapstate);
+	placeLevers(houseMap, mapstate);
+	placeDynamite(houseMap, mapstate);
+}
 
 
 void displayMap(MapT houseMap) {

@@ -22,8 +22,8 @@ typedef const char *enumOperation[];
 enum mapObject { none, key, up, down, left, right, door, map };
 typedef enum mapObject mapObjectT;
 typedef const char *enumMapObject[];
-#define OBJECTTEXTS { "ingen", "nyckel","uppåt","nedåt","vänster","höger", "dörr","karta","dynamit" }
-#define NUMBEROFOBJECTS 9
+#define OBJECTTEXTS { "ingen", "nyckel","uppåt","nedåt","vänster","höger", "dörr","karta","dynamit", "spak" }
+#define NUMBEROFOBJECTS 10
 
 struct userInput {
 	operationT op;
@@ -73,11 +73,11 @@ values, otherwhise both are set to -1.
 ********************************************************************/
 inputT getUserInput(void);
 
-void createKermit(int width, int height, MapT houseMap, playerValues *kermit);
+void createKermit(int width, int height, MapT *houseMap, playerValues *kermit);
 
 void kermitAction(inputT playerChoice, playerValues *kermit, MapT houseMap);
 
-void updateKermitPosition(MapT houseMap, playerValues *kermit);
+void updateKermitValues(MapT houseMap, playerValues *kermit);
 
 void kermitVisibility(MapT houseMap, playerValues *kermit);
 
@@ -87,9 +87,9 @@ void kermitMove(inputT playerChoice, MapT houseMap, playerValues *kermit);
 
 void checkIfPointPickup(MapT houseMap, playerValues *kermit);
 
-void placePoints(MapT houseMap);
+void placePoints(MapT *houseMap, int mapstate);
 
-void placeDynamite(MapT houseMap);
+void placeDynamite(MapT *houseMap, int mapstate);
 
 int grabItem(inputT playerChoice, MapT houseMap, playerValues *kermit);
 
@@ -105,7 +105,19 @@ int allowingMovementSymbols(inputT playerChoice, MapT houseMap, playerValues *ke
 
 void useDynamite(MapT houseMap, playerValues *kermit);
 
+void printInventory(playerValues *kermit);
 
+void placeLevers(MapT *houseMap, int mapstate);
+
+void transformMap(MapT *houseMap, playerValues *kermit);
+
+void loadEasyMap(MapT *houseMap, playerValues *kermit);
+
+void placeObjectsOnMap(MapT *houseMap, int mapstate);
+
+void checkIfTransformMap(inputT playerChoice, MapT *houseMap, playerValues *kermit);
+
+void loadHardMap(MapT *houseMap, playerValues *kermit);
 
 
 void displayMap(MapT houseMap);
