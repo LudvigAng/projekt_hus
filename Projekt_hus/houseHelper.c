@@ -83,11 +83,35 @@ inputT getUserInput(void)
 
 
 void createKermit(int width, int height, MapT *houseMap, playerValues *kermit) {
+	int creation = 1;
 	kermit->x = height / 2;
 	kermit->y = width / 2;
 
-	houseMap->mArr[kermit->x][kermit->y] = '@';
-	houseMap->vArr[kermit->x][kermit->y] = 1;
+	while (creation) {
+		if (houseMap->mArr[kermit->x][kermit->y] == ' ') {
+			houseMap->mArr[kermit->x][kermit->y] = '@';
+			houseMap->vArr[kermit->x][kermit->y] = 1;
+			creation = 0;
+		}
+		else {
+			kermit->x -= 1;
+			kermit->y -= 1;
+		}
+	}
+}
+
+void showHelp(void) {
+	system("cls");
+	printf("\n HUS-SPEL\n--------------------------------------------------------------------------------");
+	printf("\nRegler:\nSpelet går ut på att ta sig ut ur huset. Man måste hitta nycklar ");
+	printf("markerade 'K' för att ta sig igenom dörrar markerade 'D' tills man kommer till ytterdörren, markerad 'M'. Under spelets gång kan du även samla upp poäng!\n\n");
+	printf(" FÖREMÅL DU KAN HITTA\n--------------------------------------------------------------------------------");
+	printf("\nNycklar(K):\nAnvänds för att öppna innedörrar samt ytterdörren. Skriv 'tag nyckel' för att plocka upp och 'öppna dörr' för att använda.");
+	printf("\n\nPoäng(*):\nEn upplockad poäng-symbol ger 50 poäng. Man får även 200 poäng för att klara spelet.");
+	printf("\n\nDynamit(X):\nLåter dig spränga dig igenom innerväggar och innerdörrar(OBS, explosioner förstör allting två steg runt spelaren, inklusive användbara föremål som nycklar och poäng mm). Skriv 'tag dynamit' för att plocka upp och 'använd dynamit' för att använda.");
+	printf("\n\nSpak(I):\nVid användning transformeras kartan till att bli enklare eller svårare beroende på din tur (eller otur). Den lättare ger dig 3 nycklar och 1 dynamit att använda, samt har den nya kartan färre innerväggar att ta sig förbi och fler föremål och poäng kommer finnas i huset.");
+	printf("Den svårare kartan har fler väggar än den ursprungliga och mycket färre föremål och poäng att plocka upp. När man använt en spak är det inte möjligt att ta sig tillbaka till den ursprungliga kartan. Skriv 'använd spak' för att dra spaken.");
+	getchar();
 }
 
 
@@ -95,17 +119,15 @@ void kermitAction(inputT playerChoice, playerValues *kermit, MapT houseMap) {
 	kermit->last_x = kermit->x;
 	kermit->last_y = kermit->y;
 
+	if (playerChoice.op == 1) showHelp();
 	if (playerChoice.op == 2 && (playerChoice.mObj == 1 || playerChoice.mObj == 8)) grabItem(playerChoice, houseMap, kermit);
-
 	if (1 < playerChoice.mObj < 6) kermitMove(playerChoice, houseMap, kermit);
-	
 	checkIfPointPickup(houseMap, kermit);
-	
 	if (playerChoice.op == 3 && playerChoice.mObj == 6) {
 		if (checkForDoor(houseMap, kermit) == 1) {
 			openDoor(houseMap, kermit);
 		}
-		else if (2) {
+		else if (checkForDoor(houseMap, kermit) == 2) {
 			openExitDoor(houseMap, kermit);
 		}
 	}
@@ -148,7 +170,7 @@ void loadHardMap(MapT *houseMap, playerValues *kermit) {
 	system("cls");
 	printf("Du har otur! Du hittar en svårare karta att ta dig igenom!");
 	getchar();
-	int width = 35, height = 24, noOfWalls = 32, mapstate = 3;
+	int width = 35, height = 24, noOfWalls = 40, mapstate = 3;
 
 	*houseMap = createMap(width, height, noOfWalls);
 	placeObjectsOnMap(houseMap, mapstate);
@@ -162,7 +184,7 @@ void checkIfTransformMap(inputT playerChoice, MapT *houseMap, playerValues *kerm
 
 void checkIfPointPickup(MapT houseMap, playerValues *kermit) {
 	if (houseMap.mArr[kermit->x][kermit->y] == '*') {
-		kermit->points += 50;
+		kermit->points += 20;
 	}
 }
 
@@ -196,10 +218,30 @@ int grabItem(inputT playerChoice, MapT houseMap, playerValues *kermit) {
 
 void useDynamite(MapT houseMap, playerValues *kermit) {
 	if (kermit->dynamite > 0) {
-		for (int i = -2; i < 3; i++) {
-			for (int j = -2; j < 3; j++) {
-				if (houseMap.mArr[kermit->x + i][kermit->y + j] != 'e' && houseMap.mArr[kermit->x + i][kermit->y + j] != 'M') {
-					houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
+		if (kermit->x == 1) {
+			for (int i = -1; i < 3; i++) {
+				for (int j = -2; j < 3; j++) {
+					if (houseMap.mArr[kermit->x + i][kermit->y + j] != 'e' && houseMap.mArr[kermit->x + i][kermit->y + j] != 'M') {
+						houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
+					}
+				}
+			}
+		}
+		else if (kermit->x == 22) {
+			for (int i = -2; i < 2; i++) {
+				for (int j = -2; j < 3; j++) {
+					if (houseMap.mArr[kermit->x + i][kermit->y + j] != 'e' && houseMap.mArr[kermit->x + i][kermit->y + j] != 'M') {
+						houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
+					}
+				}
+			}
+		}
+		else {
+			for (int i = -2; i < 3; i++) {
+				for (int j = -2; j < 3; j++) {
+					if (houseMap.mArr[kermit->x + i][kermit->y + j] != 'e' && houseMap.mArr[kermit->x + i][kermit->y + j] != 'M') {
+						houseMap.mArr[kermit->x + i][kermit->y + j] = ' ';
+					}
 				}
 			}
 		}
@@ -325,18 +367,6 @@ int openExitDoor(MapT houseMap, playerValues *kermit) {
 	return 0;
 }
 
-int winGame(int height, int width, MapT houseMap, playerValues *kermit) {
-	if (kermit->x == 0 || kermit->x == height - 1 || kermit->y == 0 || kermit->y == width - 1) {
-		system("cls");
-		kermit->points += 200;
-		printf("Du har tagit dig ur huset och vunnit!\nDina poäng: %d", kermit->points);
-		getchar();
-		return 0;
-	}
-	else {
-		return 1;
-	}
-}
 
 void placePoints(MapT *houseMap, int mapstate) {
 	int xPos = 0, yPos = 0, visibility = 0, i = 0;
@@ -347,13 +377,13 @@ void placePoints(MapT *houseMap, int mapstate) {
 		i = 0;
 	}
 	else if (mapstate == 2) {
-		i = -8;
+		i = -15;
 	}
 	else if (mapstate == 3) {
-		i = 8;
+		i = 12;
 	}
 
-	for (; i <= 18; i++) {
+	for (; i <= 30; i++) {
 		placeObject(*houseMap, xPos, yPos, pointChr, &pos, visibility);
 	}
 }
@@ -366,10 +396,7 @@ void placeLevers(MapT *houseMap, int mapstate) {
 	if (mapstate == 1) {
 		i = 0;
 	}
-	else if (mapstate == 2) {
-		i = 3;
-	}
-	else if (mapstate == 3) {
+	else if (mapstate == 2 || mapstate == 3) {
 		i = 3;
 	}
 
@@ -390,10 +417,10 @@ void placeDynamite(MapT *houseMap, int mapstate) {
 		i = -6;
 	}
 	else if (mapstate == 3) {
-		i = 14;
+		i = 10;
 	}
 
-	for (; i <= 20; i++) {
+	for (; i <= 15; i++) {
 		placeObject(*houseMap, xPos, yPos, pointChr, &pos, visibility);
 	}
 }
@@ -403,6 +430,118 @@ void placeObjectsOnMap(MapT *houseMap, int mapstate) {
 	placeLevers(houseMap, mapstate);
 	placeDynamite(houseMap, mapstate);
 }
+
+//int HighscoreSave(playerValues *kermit) {
+//	typedef struct {
+//		int score;
+//		int place;
+//	} HSArray;
+//	int l = 0;
+//	FILE *HSfile;
+//	HSArray *HS[20];
+//	HSArray *HSscore;
+//	HSscore = HS;
+//	HSscore = malloc(sizeof(int));
+//	fopen_s(&HSfile, "HSfile.txt", "r");
+//
+//
+//	for (int score = 1; score != feof(HSfile); score++) {
+//		fscanf_s(HSfile, "%d", &HSscore[score]);
+//	}
+//	l = strlen(HSscore);
+//
+//	for (int i = 0; i < l; i++) {
+//
+//	}
+//
+//	free(HSscore);
+//	fclose(HSfile);
+//}
+
+int checkIfGameExit(int height, int width, inputT playerChoice, MapT houseMap, playerValues *kermit) {
+	if (kermit->x == 0 || kermit->x == height - 1 || kermit->y == 0 || kermit->y == width - 1) {
+		winGame(kermit);
+		return 0;
+	}
+	if (playerChoice.op == 0) {
+		playerExit(houseMap, kermit);
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}
+
+int playerExit(MapT houseMap, playerValues *kermit) {
+	int exitMenu = 0;
+	printf("Vill du spara ditt spel?\n1. Ja\n2. Nej\n");
+	scanf_s("%d", &exitMenu);
+	if (exitMenu == 1) {
+		exitSave(houseMap, kermit);
+		return 0;
+	}
+	else if (2) return 0;
+}
+
+void winGame(playerValues *kermit) {
+	system("cls");
+	kermit->points += 100;
+	printf("Du har tagit dig ur huset och vunnit!\nDina poäng: %d", kermit->points);
+	//HighscoreSave(kermit);
+	getchar();
+}
+
+void exitSave(MapT houseMap, playerValues *kermit) {
+	FILE *savefile;
+	fopen_s(&savefile, "savefile.txt", "w+");
+
+	for (int i = 0; i < 24; i++) {
+		for (int j = 0; j < 35; j++) {			
+				fprintf(savefile, "%c", houseMap.mArr[i][j]);
+		}
+		fprintf(savefile, "\n");
+	}
+	fprintf(savefile, "%d ", kermit->x);
+	fprintf(savefile, "%d ", kermit->y);
+	fprintf(savefile, "%d ", kermit->points);
+	fprintf(savefile, "%d ", kermit->keys);
+	fprintf(savefile, "%d ", kermit->dynamite);
+
+	fclose(savefile);
+}
+
+void openSave(MapT *houseMap, playerValues *kermit) {
+	FILE *savefile;
+	fopen_s(&savefile, "savefile.txt", "r");
+
+	for (int i = 0; i < 24; i++) {
+		for (int j = 0; j < 35; j++) {
+			fscanf_s(savefile, "%c", &houseMap->mArr[i][j]);
+			if (houseMap->mArr[i][j] != '\n') {
+				printf("%c", houseMap->mArr[i][j]);
+			}
+			else {
+				houseMap->mArr[i][j--];
+			}
+		}
+		printf("\n");
+	}
+	fscanf_s(savefile, "%d", &kermit->x);
+	fscanf_s(savefile, "%d", &kermit->y);
+	fscanf_s(savefile, "%d", &kermit->points);
+	fscanf_s(savefile, "%d", &kermit->keys);
+	fscanf_s(savefile, "%d", &kermit->dynamite);
+	
+	fclose(savefile);
+}
+
+//void newGame(int width, int height, int noOfWalls, int *playGame, int mapstate, MapT *houseMap, playerValues *kermit) {
+//	*playGame = 1;
+//	*houseMap = createMap(width, height, noOfWalls);
+//	placeObjectsOnMap(&houseMap, mapstate);
+//	createKermit(width, height, &houseMap, &kermit);
+//	displayMap(&houseMap); //ta bort innan redovisning
+//}
 
 
 void displayMap(MapT houseMap) {

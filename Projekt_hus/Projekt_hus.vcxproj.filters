@@ -39,4 +39,12 @@
       <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="savefile.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="HSfile.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

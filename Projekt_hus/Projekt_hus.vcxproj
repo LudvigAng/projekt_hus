@@ -125,6 +125,10 @@
     <ClInclude Include="houseManager.h" />
     <ClInclude Include="myIOLib.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="HSfile.txt" />
+    <Text Include="savefile.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

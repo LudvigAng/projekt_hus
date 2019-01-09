@@ -1,0 +1,25 @@
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+e          w         w*K D     ** e
+e          w     K   w  *wK   *   e
+e*         w         DK  w      * e
+e          w      *  w   w     *X e
+e          w         w   w   *    e
+e  *    *  w wwwwwwwwwwwDwwwwwwwwDe
+e         Xw     K   w   w   *    e
+e               *    DK  w    *  *e
+e  X       I     K   w  *D   K    e
+e   X    X   X  *   *w K w X      e
+ewwwwwwwwwwwwwwwDwwwwwDwwwDwwwwwwwe
+e                    w            e
+e                           X     M
+e    K               w     @      e
+e  X  X          X   w     I      e
+e                    w      X *   e
+ewwwDwwwwwwwwwwwwwwwwwwDwwwwwDwwwwe
+e              *     w   D        e
+e     *              wK Xw      * e
+e        X w  K      D   w        e
+e          w        Xw   w     ** e
+e     I   *w         w   w    *   e
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+14 27 80 3 0 
